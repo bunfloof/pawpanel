@@ -20,7 +20,7 @@ module.exports = {
     theme: {
         extend: {
             fontFamily: {
-                header: ['"IBM Plex Sans"', '"Roboto"', 'system-ui', 'sans-serif'],
+                header: ['Inter'],
             },
             colors: {
                 black: '#131a20',
@@ -34,6 +34,17 @@ module.exports = {
             fontSize: {
                 '2xs': '0.625rem',
             },
+            fontWeight: {
+                'thin': 100,
+                'ultralight': 200,
+                'light': 300,
+                'regular': 400,
+                'medium': 500,
+                'semibold': 600,
+                'bold': 700,
+                'heavy': 800,
+                'black': 900,
+              },
             transitionDuration: {
                 250: '250ms',
             },
