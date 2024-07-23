@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { ServerContext } from '@/state/server';
 import { Link, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -33,7 +33,7 @@ const RightNavigation = styled.div`
     }
 `;
 
-export default () => {
+const NavigationBar = forwardRef<HTMLDivElement>((_, ref) => {
     const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
     const { serverName, serverId } = (() => {
         try {
@@ -58,7 +58,7 @@ export default () => {
     };
 
     return (
-        <div className={'w-full bg-neutral-900 shadow-md overflow-x-auto'}>
+        <div ref={ref} className={'w-full bg-neutral-900 shadow-md overflow-x-auto'}>
             <SpinnerOverlay visible={isLoggingOut} />
             <div className={'mx-auto w-full flex items-center h-[3.5rem] px-[24px]'}>
                 <NavLink
@@ -115,4 +115,6 @@ export default () => {
             </div>
         </div>
     );
-};
+});
+
+export default NavigationBar;

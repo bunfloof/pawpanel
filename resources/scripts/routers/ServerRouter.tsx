@@ -1,5 +1,5 @@
 import TransferListener from '@/components/server/TransferListener';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { NavLink, Route, Switch, useRouteMatch } from 'react-router-dom';
 import NavigationBar from '@/components/NavigationBar';
 import TransitionRouter from '@/TransitionRouter';
@@ -38,7 +38,7 @@ export default () => {
     const underlineRef = useRef<HTMLDivElement>(null);
     const navRef = useRef<HTMLDivElement>(null);
     const [hoveredTabIndex, setHoveredTabIndex] = useState<number | null>(null);
-    const [activeTabIndex, setActiveTabIndex] = useState<number | null>(null);
+    //const [activeTabIndex, setActiveTabIndex] = useState<number | null>(null);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const filteredRoutes = routes.server.filter((route) => !!route.name);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -74,8 +74,8 @@ export default () => {
         const updateActiveTab = () => {
             const activeTab = navRef.current?.querySelector('.text-neutral-100') as HTMLElement;
             if (activeTab) {
-                const index = Array.from(navRef.current?.children || []).indexOf(activeTab);
-                setActiveTabIndex(index);
+                //const index = Array.from(navRef.current?.children || []).indexOf(activeTab);
+                //setActiveTabIndex(index);
 
                 if (isInitialLoad && underlineRef.current) {
                     underlineRef.current.style.width = `${activeTab.clientWidth}px`;
@@ -93,7 +93,7 @@ export default () => {
 
     const handleTabClick = (index: number) => {
         setIsTransitioning(true);
-        setActiveTabIndex(index);
+        //setActiveTabIndex(index);
 
         const navItem = navRef.current?.children[index] as HTMLElement;
         if (navItem) {
@@ -108,11 +108,53 @@ export default () => {
         }, 100);
     };
 
-    console.log('Render - Active tab:', activeTabIndex, 'Hovered tab:', hoveredTabIndex);
+    //console.log('Render - Active tab:', activeTabIndex, 'Hovered tab:', hoveredTabIndex);
+
+    const navBar1Ref = useRef<HTMLDivElement>(null);
+    const navBar2Ref = useRef<HTMLDivElement>(null);
+    const [navHeight, setNavHeight] = useState(0);
+    const [isNav2Entered, setIsNav2Entered] = useState(false);
+    const [scrollY, setScrollY] = useState(0);
+
+    const calculateNavHeight = useCallback(() => {
+        const height1 = navBar1Ref.current?.offsetHeight ?? 0;
+        const height2 = navBar2Ref.current?.offsetHeight ?? 0;
+        const totalHeight = height1 + height2;
+
+        // adjust height based on scroll position, but don't go below height2
+        const adjustedHeight = Math.max(height2, totalHeight - scrollY);
+
+        //console.log('Nav1 height:', height1, 'Nav2 height:', height2, 'Adjusted height:', adjustedHeight);
+        setNavHeight(adjustedHeight);
+    }, [scrollY]);
+
+    useEffect(() => {
+        if (isNav2Entered) {
+            calculateNavHeight();
+        }
+    }, [isNav2Entered, calculateNavHeight]);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrollY(window.scrollY);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('resize', calculateNavHeight);
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', calculateNavHeight);
+        };
+    }, [calculateNavHeight]);
+
+    const handleNav2Entered = () => {
+        setIsNav2Entered(true);
+    };
 
     return (
         <React.Fragment key={'server-router'}>
-            <NavigationBar />
+            <NavigationBar ref={navBar1Ref} />
             {!uuid || !id ? (
                 error ? (
                     <ServerError message={error} />
@@ -123,8 +165,11 @@ export default () => {
                 <>
                     <div className='flex flex-col flex-grow'>
                         {/* Main content area */}
-                        <CSSTransition timeout={150} classNames={'fade'} appear in>
-                            <div className='sticky top-0 w-full bg-black shadow z-10 border-b border-[#424d5c] overflow-hidden'>
+                        <CSSTransition timeout={150} classNames={'fade'} appear in onEntered={handleNav2Entered}>
+                            <div
+                                ref={navBar2Ref}
+                                className='sticky top-0 w-full bg-black shadow z-10 border-b border-[#424d5c] overflow-hidden'
+                            >
                                 <div
                                     ref={navRef}
                                     className='flex items-center text-sm mx-auto px-2 max-w-full overflow-x-auto overflow-y-hidden custom-scrollbar relative'
@@ -214,7 +259,16 @@ export default () => {
                         </CSSTransition>
                         <div className='flex flex-grow'>
                             {/* Sidebar - hidden on small screens */}
-                            <div className='hidden md:block w-64 bg-black overflow-y-auto custom-scrollbar'>
+                            <div
+                                className='w-64 bg-black overflow-y-auto custom-scrollbar'
+                                style={{
+                                    position: 'sticky',
+                                    top: `${navHeight}px`,
+                                    height: `calc(100vh - ${navHeight}px)`,
+                                    overflowY: 'auto',
+                                    // transition: 'top 0.2s, height 0.2s',
+                                }}
+                            >
                                 <div className='flex flex-col p-4'>
                                     {routes.server
                                         .filter((route) => !!route.name)
