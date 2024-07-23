@@ -1,6 +1,5 @@
 import TransferListener from '@/components/server/TransferListener';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { theme } from 'twin.macro';
 import { NavLink, Route, Switch, useRouteMatch } from 'react-router-dom';
 import NavigationBar from '@/components/NavigationBar';
 import TransitionRouter from '@/TransitionRouter';
@@ -15,7 +14,7 @@ import { useStoreState } from 'easy-peasy';
 import InstallListener from '@/components/server/InstallListener';
 import ErrorBoundary from '@/components/elements/ErrorBoundary';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import { faExternalLinkAlt, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useLocation } from 'react-router';
 import ConflictStateRenderer from '@/components/server/ConflictStateRenderer';
 import PermissionRoute from '@/components/elements/PermissionRoute';
@@ -143,6 +142,15 @@ export default () => {
         setIsNav2Entered(true);
     };
 
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+    const handleSidebarItemClick = () => {
+        if (window.innerWidth < 768) {
+            setIsSidebarOpen(false);
+        }
+    };
+
     return (
         <React.Fragment key={'server-router'}>
             <NavigationBar ref={navBar1Ref} />
@@ -155,8 +163,8 @@ export default () => {
             ) : (
                 <>
                     <div className='flex flex-col flex-grow'>
-                        {/* Main content area */}
                         <CSSTransition timeout={150} classNames={'fade'} appear in onEntered={handleNav2Entered}>
+                            {/* Subnavigation bar area */}
                             <div
                                 ref={navBar2Ref}
                                 className='sticky top-0 w-full bg-black shadow z-10 border-b border-[#424d5c] overflow-hidden'
@@ -165,6 +173,12 @@ export default () => {
                                     ref={navRef}
                                     className='flex items-center text-sm mx-auto px-2 max-w-full overflow-x-auto overflow-y-hidden custom-scrollbar relative'
                                 >
+                                    <button
+                                        onClick={toggleSidebar}
+                                        className='mr-2 p-2 text-neutral-300 hover:text-neutral-100 focus:outline-none'
+                                    >
+                                        <FontAwesomeIcon icon={isSidebarOpen ? faTimes : faBars} />
+                                    </button>
                                     {filteredRoutes.map((route, index) =>
                                         route.permission ? (
                                             <Can key={route.path} action={route.permission} matchAny>
@@ -268,32 +282,20 @@ export default () => {
                             </div>
                         </CSSTransition>
                         <div className='flex flex-grow'>
-                            {/* Sidebar - hidden on small screens */}
+                            {/* Sidebar */}
                             <div
-                                className='text-sm w-64 bg-black overflow-y-auto custom-scrollbar'
+                                className={`w-64 bg-black overflow-y-auto custom-scrollbar text-sm transition-all duration-300 
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+        fixed md:relative md:flex-shrink-0 z-50`}
                                 style={{
-                                    position: 'sticky',
+                                    position: isSidebarOpen ? 'sticky' : 'fixed',
                                     top: `${navHeight}px`,
                                     height: `calc(100vh - ${navHeight}px)`,
                                     overflowY: 'auto',
-                                    transition: 'top 0.2s, height 0.2s',
+                                    transition: 'transform 0.3s ease-in-out, top 0.2s, height 0.2s',
                                 }}
                             >
-                                {/* Background extension */}
-                                <div
-                                    style={{
-                                        position: 'fixed',
-                                        top: '0',
-                                        left: '0',
-                                        width: '256px',
-                                        height: `${navHeight}px`,
-                                        backgroundColor: theme('colors.black'),
-                                        zIndex: -1,
-                                        transition: 'height 0.2s',
-                                    }}
-                                />
                                 {/* Sidebar content */}
-
                                 <div className='flex flex-col p-4'>
                                     {routes.server
                                         .filter((route) => !!route.name)
@@ -312,6 +314,7 @@ export default () => {
                                                         activeClassName='bg-neutral-800 text-neutral-100'
                                                         onMouseEnter={() => setSidebarHoveredItem(route.path)}
                                                         onMouseLeave={() => setSidebarHoveredItem(null)}
+                                                        onClick={handleSidebarItemClick}
                                                     >
                                                         {route.name}
                                                     </NavLink>
@@ -329,6 +332,7 @@ export default () => {
                                                     activeClassName='bg-neutral-800 text-neutral-100'
                                                     onMouseEnter={() => setSidebarHoveredItem(route.path)}
                                                     onMouseLeave={() => setSidebarHoveredItem(null)}
+                                                    onClick={handleSidebarItemClick}
                                                 >
                                                     {route.name}
                                                 </NavLink>
@@ -379,6 +383,16 @@ export default () => {
                             </div>
                         </div>
                     </div>
+                    {isSidebarOpen && (
+                        <div
+                            className='fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden'
+                            onClick={() => setIsSidebarOpen(false)}
+                            style={{
+                                top: `${navHeight}px`,
+                                height: `calc(100vh - ${navHeight}px)`,
+                            }}
+                        ></div>
+                    )}
                 </>
             )}
         </React.Fragment>
