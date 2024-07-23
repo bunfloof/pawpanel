@@ -1,5 +1,6 @@
 import TransferListener from '@/components/server/TransferListener';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { theme } from 'twin.macro';
 import { NavLink, Route, Switch, useRouteMatch } from 'react-router-dom';
 import NavigationBar from '@/components/NavigationBar';
 import TransitionRouter from '@/TransitionRouter';
@@ -260,15 +261,30 @@ export default () => {
                         <div className='flex flex-grow'>
                             {/* Sidebar - hidden on small screens */}
                             <div
-                                className='w-64 bg-black overflow-y-auto custom-scrollbar'
+                                className='hidden md:block w-64 bg-black overflow-y-auto custom-scrollbar'
                                 style={{
                                     position: 'sticky',
                                     top: `${navHeight}px`,
                                     height: `calc(100vh - ${navHeight}px)`,
                                     overflowY: 'auto',
-                                    // transition: 'top 0.2s, height 0.2s',
+                                    transition: 'top 0.2s, height 0.2s',
                                 }}
                             >
+                                {/* Background extension */}
+                                <div
+                                    style={{
+                                        position: 'fixed',
+                                        top: '0',
+                                        left: '0',
+                                        width: '256px',
+                                        height: `${navHeight}px`,
+                                        backgroundColor: theme('colors.black'),
+                                        zIndex: -1,
+                                        transition: 'height 0.2s',
+                                    }}
+                                />
+                                {/* Sidebar content */}
+
                                 <div className='flex flex-col p-4'>
                                     {routes.server
                                         .filter((route) => !!route.name)

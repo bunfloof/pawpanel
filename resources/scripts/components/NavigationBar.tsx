@@ -58,7 +58,7 @@ const NavigationBar = forwardRef<HTMLDivElement>((_, ref) => {
     };
 
     return (
-        <div ref={ref} className={'w-full bg-neutral-900 shadow-md overflow-x-auto'}>
+        <div ref={ref} className={'w-full bg-neutral-900 shadow-md overflow-x-auto z-10'}>
             <SpinnerOverlay visible={isLoggingOut} />
             <div className={'mx-auto w-full flex items-center h-[3.5rem] px-[24px]'}>
                 <NavLink
