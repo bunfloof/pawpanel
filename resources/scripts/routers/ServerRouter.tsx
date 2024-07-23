@@ -142,8 +142,43 @@ export default () => {
         setIsNav2Entered(true);
     };
 
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+    const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(() => {
+        if (window.innerWidth >= 768) {
+            const saved = localStorage.getItem('sidebarOpen');
+            return saved !== null ? JSON.parse(saved) : true;
+        }
+        return false;
+    });
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 768) {
+                const saved = localStorage.getItem('sidebarOpen');
+                setIsSidebarOpen(saved !== null ? JSON.parse(saved) : true);
+            } else {
+                setIsSidebarOpen(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    useEffect(() => {
+        if (window.innerWidth >= 768) {
+            localStorage.setItem('sidebarOpen', JSON.stringify(isSidebarOpen));
+        }
+    }, [isSidebarOpen]);
+
+    const toggleSidebar = () => {
+        setIsSidebarOpen((prev: boolean) => {
+            const newState = !prev;
+            if (window.innerWidth >= 768) {
+                localStorage.setItem('sidebarOpen', JSON.stringify(newState));
+            }
+            return newState;
+        });
+    };
 
     const handleSidebarItemClick = () => {
         if (window.innerWidth < 768) {
@@ -284,7 +319,7 @@ export default () => {
                         <div className='flex flex-grow'>
                             {/* Sidebar */}
                             <div
-                                className={`w-64 bg-black overflow-y-auto custom-scrollbar text-sm transition-all duration-300 
+                                className={`w-64 bg-black overflow-y-auto text-sm custom-scrollbar transition-all duration-300 
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
         fixed md:relative md:flex-shrink-0 z-50`}
                                 style={{
