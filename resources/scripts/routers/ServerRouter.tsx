@@ -40,9 +40,12 @@ export default () => {
     const navRef = useRef<HTMLDivElement>(null);
     const [hoveredTabIndex, setHoveredTabIndex] = useState<number | null>(null);
     //const [activeTabIndex, setActiveTabIndex] = useState<number | null>(null);
-    const [isTransitioning, setIsTransitioning] = useState(false);
+    //const [isTransitioning, setIsTransitioning] = useState(false);
     const filteredRoutes = routes.server.filter((route) => !!route.name);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [activeRoute, setActiveRoute] = useState(location.pathname);
+
+    const [sidebarHoveredItem, setSidebarHoveredItem] = useState<string | null>(null);
 
     const to = (value: string, url = false) => {
         if (value === '/') {
@@ -72,6 +75,10 @@ export default () => {
     }, [match.params.id]);
 
     useEffect(() => {
+        setActiveRoute(location.pathname);
+    }, [location.pathname]);
+
+    useEffect(() => {
         const updateActiveTab = () => {
             const activeTab = navRef.current?.querySelector('.text-neutral-100') as HTMLElement;
             if (activeTab) {
@@ -91,23 +98,6 @@ export default () => {
 
         return () => clearTimeout(timeoutId);
     }, [location.pathname, isInitialLoad]);
-
-    const handleTabClick = (index: number) => {
-        setIsTransitioning(true);
-        //setActiveTabIndex(index);
-
-        const navItem = navRef.current?.children[index] as HTMLElement;
-        if (navItem) {
-            navItem.classList.add('temp-active');
-        }
-
-        setTimeout(() => {
-            setIsTransitioning(false);
-            if (navItem) {
-                navItem.classList.remove('temp-active');
-            }
-        }, 100);
-    };
 
     //console.log('Render - Active tab:', activeTabIndex, 'Hovered tab:', hoveredTabIndex);
 
@@ -182,11 +172,14 @@ export default () => {
                                                     key={route.path}
                                                     to={to(route.path, true)}
                                                     exact={route.exact}
-                                                    className='relative flex-shrink-0 inline-flex items-center py-3 px-4 text-neutral-300 no-underline whitespace-nowrap group'
+                                                    className={`relative flex-shrink-0 inline-flex items-center py-3 px-4 text-neutral-300 no-underline whitespace-nowrap group ${
+                                                        location.pathname === to(route.path, true)
+                                                            ? 'cursor-default pointer-events-none'
+                                                            : ''
+                                                    }`}
                                                     activeClassName='text-neutral-100'
                                                     onMouseEnter={() => setHoveredTabIndex(index)}
                                                     onMouseLeave={() => setHoveredTabIndex(null)}
-                                                    onClick={() => handleTabClick(index)}
                                                 >
                                                     <span className='relative z-10 w-full transition-colors duration-150 group-hover:text-neutral-100'>
                                                         {route.name}
@@ -194,7 +187,13 @@ export default () => {
                                                     <motion.span
                                                         className='absolute inset-0 my-2 bg-neutral-500 rounded-md'
                                                         initial={{ opacity: 0 }}
-                                                        animate={{ opacity: hoveredTabIndex === index ? 0.5 : 0 }}
+                                                        animate={{
+                                                            opacity:
+                                                                hoveredTabIndex === index ||
+                                                                sidebarHoveredItem === route.path
+                                                                    ? 0.5
+                                                                    : 0,
+                                                        }}
                                                         transition={{ duration: 0.15 }}
                                                     ></motion.span>
                                                 </NavLink>
@@ -204,17 +203,28 @@ export default () => {
                                                 key={route.path}
                                                 to={to(route.path, true)}
                                                 exact={route.exact}
-                                                className='relative flex-shrink-0 inline-flex items-center py-3 px-4 text-neutral-300 no-underline whitespace-nowrap transition-all duration-150 hover:text-neutral-100 rounded-md'
+                                                className={`relative flex-shrink-0 inline-flex items-center py-3 px-4 text-neutral-300 no-underline whitespace-nowrap group ${
+                                                    location.pathname === to(route.path, true)
+                                                        ? 'cursor-default pointer-events-none'
+                                                        : ''
+                                                }`}
                                                 activeClassName='text-neutral-100'
                                                 onMouseEnter={() => setHoveredTabIndex(index)}
                                                 onMouseLeave={() => setHoveredTabIndex(null)}
-                                                onClick={() => handleTabClick(index)}
                                             >
-                                                {route.name}
+                                                <span className='relative z-10 w-full transition-colors duration-150 group-hover:text-neutral-100'>
+                                                    {route.name}
+                                                </span>
                                                 <motion.span
                                                     className='absolute inset-0 my-2 bg-neutral-500 rounded-md'
                                                     initial={{ opacity: 0 }}
-                                                    animate={{ opacity: hoveredTabIndex === index ? 0.5 : 0 }}
+                                                    animate={{
+                                                        opacity:
+                                                            hoveredTabIndex === index ||
+                                                            sidebarHoveredItem === route.path
+                                                                ? 0.5
+                                                                : 0,
+                                                    }}
                                                     transition={{ duration: 0.15 }}
                                                 ></motion.span>
                                             </NavLink>
@@ -232,13 +242,12 @@ export default () => {
                                             initial={false}
                                             animate={{
                                                 width:
-                                                    navRef.current?.querySelector(
-                                                        isTransitioning ? '.temp-active' : '.text-neutral-100'
-                                                    )?.clientWidth || 0,
+                                                    navRef.current?.querySelector(`a[href="${activeRoute}"]`)
+                                                        ?.clientWidth || 0,
                                                 x:
                                                     (
                                                         navRef.current?.querySelector(
-                                                            isTransitioning ? '.temp-active' : '.text-neutral-100'
+                                                            `a[href="${activeRoute}"]`
                                                         ) as HTMLElement
                                                     )?.offsetLeft || 0,
                                             }}
@@ -261,7 +270,7 @@ export default () => {
                         <div className='flex flex-grow'>
                             {/* Sidebar - hidden on small screens */}
                             <div
-                                className='hidden md:block w-64 bg-black overflow-y-auto custom-scrollbar'
+                                className='text-sm w-64 bg-black overflow-y-auto custom-scrollbar'
                                 style={{
                                     position: 'sticky',
                                     top: `${navHeight}px`,
@@ -292,10 +301,17 @@ export default () => {
                                             route.permission ? (
                                                 <Can key={route.path} action={route.permission} matchAny>
                                                     <NavLink
+                                                        key={route.path}
                                                         to={to(route.path, true)}
                                                         exact={route.exact}
-                                                        className='py-2 px-4 text-neutral-300 hover:text-neutral-100 hover:bg-neutral-800 rounded-md transition-colors duration-150'
+                                                        className={`py-2 px-4 text-neutral-300 hover:text-neutral-100 hover:bg-neutral-800 rounded-md transition-colors duration-150 ${
+                                                            location.pathname === to(route.path, true)
+                                                                ? 'cursor-default pointer-events-none'
+                                                                : ''
+                                                        }`}
                                                         activeClassName='bg-neutral-800 text-neutral-100'
+                                                        onMouseEnter={() => setSidebarHoveredItem(route.path)}
+                                                        onMouseLeave={() => setSidebarHoveredItem(null)}
                                                     >
                                                         {route.name}
                                                     </NavLink>
@@ -305,8 +321,14 @@ export default () => {
                                                     key={route.path}
                                                     to={to(route.path, true)}
                                                     exact={route.exact}
-                                                    className='py-2 px-4 text-neutral-300 hover:text-neutral-100 hover:bg-neutral-800 rounded-md transition-colors duration-150'
+                                                    className={`py-2 px-4 text-neutral-300 hover:text-neutral-100 hover:bg-neutral-800 rounded-md transition-colors duration-150 ${
+                                                        location.pathname === to(route.path, true)
+                                                            ? 'cursor-default pointer-events-none'
+                                                            : ''
+                                                    }`}
                                                     activeClassName='bg-neutral-800 text-neutral-100'
+                                                    onMouseEnter={() => setSidebarHoveredItem(route.path)}
+                                                    onMouseLeave={() => setSidebarHoveredItem(null)}
                                                 >
                                                     {route.name}
                                                 </NavLink>
