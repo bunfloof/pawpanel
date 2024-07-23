@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
+import { ServerContext } from '@/state/server';
 import { Link, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCogs, faLayerGroup, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
@@ -34,6 +35,17 @@ const RightNavigation = styled.div`
 
 export default () => {
     const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
+    const { serverName, serverId } = (() => {
+        try {
+            const serverData = ServerContext.useStoreState((state) => state.server.data);
+            return {
+                serverName: serverData?.name ?? name,
+                serverId: serverData?.id,
+            };
+        } catch {
+            return { serverName: name, serverId: undefined };
+        }
+    })();
     const rootAdmin = useStoreState((state: ApplicationStore) => state.user.data!.rootAdmin);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -48,15 +60,29 @@ export default () => {
     return (
         <div className={'w-full bg-neutral-900 shadow-md overflow-x-auto'}>
             <SpinnerOverlay visible={isLoggingOut} />
-            <div className={'mx-auto w-full flex items-center h-[3.5rem] max-w-[1200px]'}>
-                <div id={'logo'} className={'flex-1'}>
+            <div className={'mx-auto w-full flex items-center h-[3.5rem] px-[24px]'}>
+                <NavLink
+                    to={'/'}
+                    exact
+                    className='px-3 text-neutral-300 hover:text-neutral-100 transition-colors duration-150'
+                >
+                    <span className='flex items-center whitespace-nowrap'>
+                        {' '}
+                        <FontAwesomeIcon icon={faLayerGroup} /> <span className='ml-2'>Servers</span>
+                    </span>
+                </NavLink>
+                <ol>
+                    <li className='text-neutral-400'>/</li>
+                </ol>
+                <div id={'logo'} className={'flex-1 min-w-0'}>
                     <Link
-                        to={'/'}
+                        to={serverId ? `/server/${serverId}` : '/'}
                         className={
-                            'text-2xl font-header px-4 no-underline text-neutral-200 hover:text-neutral-100 transition-colors duration-150'
+                            'pl-3 no-underline text-neutral-300 hover:text-neutral-100 transition-colors duration-150 block truncate'
                         }
+                        title={serverName}
                     >
-                        {name}
+                        {serverName}
                     </Link>
                 </div>
                 <RightNavigation className={'flex h-full items-center justify-center'}>

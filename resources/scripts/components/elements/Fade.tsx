@@ -5,6 +5,7 @@ import CSSTransition, { CSSTransitionProps } from 'react-transition-group/CSSTra
 
 interface Props extends Omit<CSSTransitionProps, 'timeout' | 'classNames'> {
     timeout: number;
+    containerClassName?: string;
 }
 
 const Container = styled.div<{ timeout: number }>`
@@ -35,9 +36,9 @@ const Container = styled.div<{ timeout: number }>`
     }
 `;
 
-const Fade: React.FC<Props> = ({ timeout, children, ...props }) => (
-    <Container timeout={timeout}>
-        <CSSTransition timeout={timeout} classNames={'fade'} {...props}>
+const Fade: React.FC<Props> = ({ timeout, children, containerClassName, ...props }) => (
+    <Container className={containerClassName} timeout={timeout}>
+        <CSSTransition timeout={timeout} classNames='fade' {...props}>
             {children}
         </CSSTransition>
     </Container>

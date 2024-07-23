@@ -18,8 +18,15 @@ const TransitionRouter: React.FC = ({ children }) => {
         <Route
             render={({ location }) => (
                 <StyledSwitchTransition>
-                    <Fade timeout={150} key={location.pathname + location.search} in appear unmountOnExit>
-                        <section>{children}</section>
+                    <Fade
+                        containerClassName='flex flex-col flex-grow'
+                        timeout={150}
+                        key={location.pathname + location.search}
+                        in
+                        appear
+                        unmountOnExit
+                    >
+                        <section className='flex flex-col flex-grow'>{children}</section>
                     </Fade>
                 </StyledSwitchTransition>
             )}

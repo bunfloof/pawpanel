@@ -121,116 +121,172 @@ export default () => {
                 )
             ) : (
                 <>
-                    <CSSTransition timeout={150} classNames={'fade'} appear in>
-                        <div className='sticky top-0 w-full bg-black shadow z-10 border-b border-[#424d5c] overflow-hidden'>
-                            <div
-                                ref={navRef}
-                                className='flex items-center text-sm mx-auto px-2 max-w-full overflow-x-auto overflow-y-hidden custom-scrollbar relative'
-                            >
-                                {filteredRoutes.map((route, index) =>
-                                    route.permission ? (
-                                        <Can key={route.path} action={route.permission} matchAny>
+                    <div className='flex flex-col flex-grow'>
+                        {/* Main content area */}
+                        <CSSTransition timeout={150} classNames={'fade'} appear in>
+                            <div className='sticky top-0 w-full bg-black shadow z-10 border-b border-[#424d5c] overflow-hidden'>
+                                <div
+                                    ref={navRef}
+                                    className='flex items-center text-sm mx-auto px-2 max-w-full overflow-x-auto overflow-y-hidden custom-scrollbar relative'
+                                >
+                                    {filteredRoutes.map((route, index) =>
+                                        route.permission ? (
+                                            <Can key={route.path} action={route.permission} matchAny>
+                                                <NavLink
+                                                    key={route.path}
+                                                    to={to(route.path, true)}
+                                                    exact={route.exact}
+                                                    className='relative flex-shrink-0 inline-flex items-center py-3 px-4 text-neutral-300 no-underline whitespace-nowrap group'
+                                                    activeClassName='text-neutral-100'
+                                                    onMouseEnter={() => setHoveredTabIndex(index)}
+                                                    onMouseLeave={() => setHoveredTabIndex(null)}
+                                                    onClick={() => handleTabClick(index)}
+                                                >
+                                                    <span className='relative z-10 w-full transition-colors duration-150 group-hover:text-neutral-100'>
+                                                        {route.name}
+                                                    </span>
+                                                    <motion.span
+                                                        className='absolute inset-0 my-2 bg-neutral-500 rounded-md'
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: hoveredTabIndex === index ? 0.5 : 0 }}
+                                                        transition={{ duration: 0.15 }}
+                                                    ></motion.span>
+                                                </NavLink>
+                                            </Can>
+                                        ) : (
                                             <NavLink
                                                 key={route.path}
                                                 to={to(route.path, true)}
                                                 exact={route.exact}
-                                                className='relative flex-shrink-0 inline-flex items-center py-3 px-4 text-neutral-300 no-underline whitespace-nowrap group'
+                                                className='relative flex-shrink-0 inline-flex items-center py-3 px-4 text-neutral-300 no-underline whitespace-nowrap transition-all duration-150 hover:text-neutral-100 rounded-md'
                                                 activeClassName='text-neutral-100'
                                                 onMouseEnter={() => setHoveredTabIndex(index)}
                                                 onMouseLeave={() => setHoveredTabIndex(null)}
                                                 onClick={() => handleTabClick(index)}
                                             >
-                                                <span className='relative z-10 w-full transition-colors duration-150 group-hover:text-neutral-100'>
-                                                    {route.name}
-                                                </span>
+                                                {route.name}
                                                 <motion.span
-                                                    className='absolute inset-0 my-2 bg-neutral-500 rounded-full'
+                                                    className='absolute inset-0 my-2 bg-neutral-500 rounded-md'
                                                     initial={{ opacity: 0 }}
                                                     animate={{ opacity: hoveredTabIndex === index ? 0.5 : 0 }}
                                                     transition={{ duration: 0.15 }}
                                                 ></motion.span>
                                             </NavLink>
-                                        </Can>
-                                    ) : (
-                                        <NavLink
-                                            key={route.path}
-                                            to={to(route.path, true)}
-                                            exact={route.exact}
-                                            className='relative flex-shrink-0 inline-flex items-center py-3 px-4 text-neutral-300 no-underline whitespace-nowrap transition-all duration-150 hover:text-neutral-100 rounded-full'
-                                            activeClassName='text-neutral-100'
-                                            onMouseEnter={() => setHoveredTabIndex(index)}
-                                            onMouseLeave={() => setHoveredTabIndex(null)}
-                                            onClick={() => handleTabClick(index)}
-                                        >
-                                            {route.name}
-                                            <motion.span
-                                                className='absolute inset-0 my-2 bg-neutral-500 rounded-full'
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: hoveredTabIndex === index ? 0.5 : 0 }}
-                                                transition={{ duration: 0.15 }}
-                                            ></motion.span>
-                                        </NavLink>
-                                    )
-                                )}
-                                <div
-                                    ref={underlineRef}
-                                    className={`absolute bottom-0 left-0 h-[3px] bg-cyan-600 transition-all duration-300 ${
-                                        isInitialLoad ? '' : 'hidden'
-                                    }`}
-                                />
-                                {!isInitialLoad && (
-                                    <motion.div
-                                        className='absolute bottom-0 left-0 h-[3px] bg-cyan-600'
-                                        initial={false}
-                                        animate={{
-                                            width:
-                                                navRef.current?.querySelector(
-                                                    isTransitioning ? '.temp-active' : '.text-neutral-100'
-                                                )?.clientWidth || 0,
-                                            x:
-                                                (
+                                        )
+                                    )}
+                                    <div
+                                        ref={underlineRef}
+                                        className={`absolute bottom-0 left-0 h-[3px] bg-cyan-600 transition-all duration-300 ${
+                                            isInitialLoad ? '' : 'hidden'
+                                        }`}
+                                    />
+                                    {!isInitialLoad && (
+                                        <motion.div
+                                            className='absolute bottom-0 left-0 h-[3px] bg-cyan-600'
+                                            initial={false}
+                                            animate={{
+                                                width:
                                                     navRef.current?.querySelector(
                                                         isTransitioning ? '.temp-active' : '.text-neutral-100'
-                                                    ) as HTMLElement
-                                                )?.offsetLeft || 0,
-                                        }}
-                                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                                    />
-                                )}
-                                {rootAdmin && (
-                                    <a
-                                        href={`/admin/servers/view/${serverId}`}
-                                        target='_blank'
-                                        rel='noopener noreferrer'
-                                        className='relative flex-shrink-0 inline-flex items-center py-3 px-4 text-neutral-300 no-underline whitespace-nowrap transition-all duration-150 hover:text-neutral-100 hover:bg-neutral-500 hover:bg-opacity-50 rounded-full active:text-neutral-100'
-                                    >
-                                        <FontAwesomeIcon icon={faExternalLinkAlt} />
-                                    </a>
+                                                    )?.clientWidth || 0,
+                                                x:
+                                                    (
+                                                        navRef.current?.querySelector(
+                                                            isTransitioning ? '.temp-active' : '.text-neutral-100'
+                                                        ) as HTMLElement
+                                                    )?.offsetLeft || 0,
+                                            }}
+                                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                                        />
+                                    )}
+                                    {rootAdmin && (
+                                        <a
+                                            href={`/admin/servers/view/${serverId}`}
+                                            target='_blank'
+                                            rel='noopener noreferrer'
+                                            className='relative flex-shrink-0 inline-flex items-center py-3 px-4 text-neutral-300 no-underline whitespace-nowrap transition-all duration-150 hover:text-neutral-100 hover:bg-neutral-500 hover:bg-opacity-50 rounded-md active:text-neutral-100'
+                                        >
+                                            <FontAwesomeIcon icon={faExternalLinkAlt} />
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        </CSSTransition>
+                        <div className='flex flex-grow'>
+                            {/* Sidebar - hidden on small screens */}
+                            <div className='hidden md:block w-64 bg-black overflow-y-auto custom-scrollbar'>
+                                <div className='flex flex-col p-4'>
+                                    {routes.server
+                                        .filter((route) => !!route.name)
+                                        .map((route) =>
+                                            route.permission ? (
+                                                <Can key={route.path} action={route.permission} matchAny>
+                                                    <NavLink
+                                                        to={to(route.path, true)}
+                                                        exact={route.exact}
+                                                        className='py-2 px-4 text-neutral-300 hover:text-neutral-100 hover:bg-neutral-800 rounded-md transition-colors duration-150'
+                                                        activeClassName='bg-neutral-800 text-neutral-100'
+                                                    >
+                                                        {route.name}
+                                                    </NavLink>
+                                                </Can>
+                                            ) : (
+                                                <NavLink
+                                                    key={route.path}
+                                                    to={to(route.path, true)}
+                                                    exact={route.exact}
+                                                    className='py-2 px-4 text-neutral-300 hover:text-neutral-100 hover:bg-neutral-800 rounded-md transition-colors duration-150'
+                                                    activeClassName='bg-neutral-800 text-neutral-100'
+                                                >
+                                                    {route.name}
+                                                </NavLink>
+                                            )
+                                        )}
+                                    {rootAdmin && (
+                                        <a
+                                            href={`/admin/servers/view/${serverId}`}
+                                            target='_blank'
+                                            rel='noopener noreferrer'
+                                            className='py-2 px-4 text-neutral-300 hover:text-neutral-100 hover:bg-neutral-800 rounded-md transition-colors duration-150'
+                                        >
+                                            <FontAwesomeIcon icon={faExternalLinkAlt} className='mr-2' />
+                                            Admin
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                            {/* Main content area */}
+                            <div className='flex-1 min-w-0 flex flex-col flex-grow'>
+                                <InstallListener />
+                                <TransferListener />
+                                <WebsocketHandler />
+                                {inConflictState &&
+                                (!rootAdmin || (rootAdmin && !location.pathname.endsWith(`/server/${id}`))) ? (
+                                    <ConflictStateRenderer />
+                                ) : (
+                                    <ErrorBoundary>
+                                        <TransitionRouter>
+                                            <Switch location={location}>
+                                                {routes.server.map(({ path, permission, component: Component }) => (
+                                                    <PermissionRoute
+                                                        key={path}
+                                                        permission={permission}
+                                                        path={to(path)}
+                                                        exact
+                                                    >
+                                                        <Spinner.Suspense>
+                                                            <Component />
+                                                        </Spinner.Suspense>
+                                                    </PermissionRoute>
+                                                ))}
+                                                <Route path={'*'} component={NotFound} />
+                                            </Switch>
+                                        </TransitionRouter>
+                                    </ErrorBoundary>
                                 )}
                             </div>
                         </div>
-                    </CSSTransition>
-                    <InstallListener />
-                    <TransferListener />
-                    <WebsocketHandler />
-                    {inConflictState && (!rootAdmin || (rootAdmin && !location.pathname.endsWith(`/server/${id}`))) ? (
-                        <ConflictStateRenderer />
-                    ) : (
-                        <ErrorBoundary>
-                            <TransitionRouter>
-                                <Switch location={location}>
-                                    {routes.server.map(({ path, permission, component: Component }) => (
-                                        <PermissionRoute key={path} permission={permission} path={to(path)} exact>
-                                            <Spinner.Suspense>
-                                                <Component />
-                                            </Spinner.Suspense>
-                                        </PermissionRoute>
-                                    ))}
-                                    <Route path={'*'} component={NotFound} />
-                                </Switch>
-                            </TransitionRouter>
-                        </ErrorBoundary>
-                    )}
+                    </div>
                 </>
             )}
         </React.Fragment>
