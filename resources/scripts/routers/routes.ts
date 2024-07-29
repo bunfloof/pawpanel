@@ -1,5 +1,6 @@
 import React, { lazy } from 'react';
 import ServerConsole from '@/components/server/console/ServerConsoleContainer';
+import BunOverviewContainer from '@/components/server/bunoverview/BunOverviewContainer';
 import DatabasesContainer from '@/components/server/databases/DatabasesContainer';
 import ScheduleContainer from '@/components/server/schedules/ScheduleContainer';
 import UsersContainer from '@/components/server/users/UsersContainer';
@@ -67,6 +68,13 @@ export default {
         },
     ],
     server: [
+        {
+            path: '/overview',
+            permission: null,
+            name: 'Overview',
+            component: BunOverviewContainer,
+            exact: true,
+        },
         {
             path: '/',
             permission: null,

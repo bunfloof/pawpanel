@@ -1,9 +1,9 @@
 import http from '@/api/http';
 
-export default (server: string, file: string): Promise<string> => {
+export default (server: string, file: string, logActivity: boolean = true): Promise<string> => {
     return new Promise((resolve, reject) => {
         http.get(`/api/client/servers/${server}/files/contents`, {
-            params: { file },
+            params: { file, logActivity },
             transformResponse: (res) => res,
             responseType: 'text',
         })

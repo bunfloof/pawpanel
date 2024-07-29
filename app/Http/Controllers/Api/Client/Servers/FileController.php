@@ -54,16 +54,19 @@ class FileController extends ClientApiController
     /**
      * Return the contents of a specified file for the user.
      *
+     * @param bool $logActivity Whether to log the activity (default: true)
      * @throws \Throwable
      */
-    public function contents(GetFileContentsRequest $request, Server $server): Response
+    public function contents(GetFileContentsRequest $request, Server $server, bool $logActivity = true): Response
     {
         $response = $this->fileRepository->setServer($server)->getContent(
             $request->get('file'),
             config('pterodactyl.files.max_edit_size')
         );
 
-        Activity::event('server:file.read')->property('file', $request->get('file'))->log();
+        if ($logActivity) {
+            Activity::event('server:file.read')->property('file', $request->get('file'))->log();
+        }
 
         return new Response($response, Response::HTTP_OK, ['Content-Type' => 'text/plain']);
     }
